@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ScholarshipModel from "../../models/scholarshipModel";
+import { isAdmin } from "../../services/authService";
+import { remove } from "../../services/scholarshipsService";
 
 type IProps = {
   scholarship: ScholarshipModel;
+  onRemove?: Function;
 };
 
-const Scholarships: React.FC<IProps> = ({ scholarship }) => {
+const Scholarships: React.FC<IProps> = ({ scholarship, onRemove }) => {
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  useEffect(() => {
+    const admin = isAdmin();
+    setIsUserAdmin(admin);
+  }, []);
+
+  const removeScholarship = (id: number) => {
+    remove(id)
+      .then(() => {
+        if (onRemove) onRemove();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   return (
     <div className='lg:mx-32 xl:mx-48 xl:px-20'>
       <div className=' w-full my-4 p-3 shadow-sm  bg-white grid grid-cols-12 '>
@@ -35,9 +56,27 @@ const Scholarships: React.FC<IProps> = ({ scholarship }) => {
             <span className='text-sm text-gray-400 '>Amount</span>
             <h4 className='text-sm font-semibold'>{scholarship.amount}</h4>
           </div>
-          <button className=' bg-violet-500 min-w-full text-white h-8 mt-1 rounded'>
-            <span className='text-sm'>Apply to scholarship</span>
-          </button>
+          {!isUserAdmin && (
+            <button className=' bg-violet-500 min-w-full text-white h-8 mt-1 rounded'>
+              <span className='text-sm'>Apply to scholarship</span>
+            </button>
+          )}
+          {isUserAdmin && (
+            <div>
+              <Link to={`/scholarship/edit/${scholarship.id}`}>
+                <button className=' bg-cyan-600 min-w-full text-white h-8 mt-1 rounded'>
+                  <i className='fas fa-edit'></i>
+                  <span className='text-sm mx-2'>Update</span>
+                </button>
+              </Link>
+              <button
+                onClick={() => removeScholarship(scholarship.id)}
+                className=' bg-red-600 min-w-full text-white h-8 mt-1 rounded'>
+                <i className='fas fa-trash-alt'></i>
+                <span className='text-sm mx-2'>Remove</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

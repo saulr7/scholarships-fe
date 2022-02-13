@@ -16,4 +16,8 @@ const update = (model: ScholarshipModel) => {
   return axios.put("scholarship/", model)
 }
 
-export { getAll, create, getById, update }
+const remove = (id: number) => {
+  return axios.delete(`scholarship/${id}`)
+}
+
+export { getAll, create, getById, update, remove }
